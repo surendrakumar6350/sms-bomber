@@ -3,7 +3,6 @@ import { AlertCircle } from "lucide-react";
 import axios from "axios";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -11,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const BomberForm = () => {
     const [phoneNumber, setPhoneNumber] = useState("");
-    const [agreed, setAgreed] = useState(false);
+    const [agreed] = useState(true);
     const [loading, setLoading] = useState(false);
     const [bombing, setBombing] = useState(false);
     const [bombCount, setBombCount] = useState(0);
@@ -152,20 +151,6 @@ const BomberForm = () => {
                             className="flex-1"
                         />
                     </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                    <Checkbox
-                        id="terms"
-                        checked={agreed}
-                        onCheckedChange={(checked) => setAgreed(checked as boolean)}
-                    />
-                    <Label htmlFor="terms" className="text-sm">
-                        I Agree to the{" "}
-                        <a href="#" className="text-indigo-600 hover:underline">
-                            Callbomberz Terms & Conditions
-                        </a>
-                    </Label>
                 </div>
 
                 <Button
