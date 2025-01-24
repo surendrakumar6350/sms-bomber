@@ -1,8 +1,10 @@
 "use client"
 import BomberForm from "@/components/ui/BomberForm";
 import Navbar from "@/components/ui/Navbar";
+import VisitCounter from "@/components/ui/visits";
 
 const Index = () => {
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
       <Navbar />
@@ -32,6 +34,7 @@ const Index = () => {
             <BomberForm />
           </div>
         </div>
+        <VisitCounter />
 
         <div className="mt-12 text-center text-sm text-gray-500">
           <p className="animate-pulse">

@@ -129,7 +129,7 @@ const BomberForm = () => {
             <Alert variant="destructive" className="mb-6">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                    We created this website for fun purpose. We dont have any intention to harm anyone
+                    We created this website for fun purpose. We don&#39;t have any intention to harm anyone
                 </AlertDescription>
             </Alert>
 
