@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 
 const BomberForm = () => {
     const [phoneNumber, setPhoneNumber] = useState("");
-    const [agreed] = useState(true);
     const [loading, setLoading] = useState(false);
     const [bombing, setBombing] = useState(false);
     const [bombCount, setBombCount] = useState(0);
@@ -24,6 +23,11 @@ const BomberForm = () => {
             }
         };
     }, [intervalId]);
+
+    const validatePhoneNumber = (phoneNumber: string): boolean => {
+        const regex = /^[6-9]\d{9}$/;
+        return regex.test(phoneNumber);
+    };
 
     const startBombing = async () => {
         try {
@@ -51,21 +55,8 @@ const BomberForm = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!agreed) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Please agree to the terms and conditions",
-            });
-            return;
-        }
-
-        if (!phoneNumber) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Please enter a phone number",
-            });
+        if (!validatePhoneNumber(phoneNumber)) {
+            alert("Please enter a valid 10-digit Indian phone number")
             return;
         }
 

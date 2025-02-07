@@ -2,11 +2,19 @@ import { NextResponse } from "next/server";
 import { apiService } from "@/apiService";
 import { MobileTracking } from "@/dbConnection/Schema/mobileTracking";
 import { headers } from "next/headers";
+import { z } from "zod";
 
 export async function GET(request: Request): Promise<NextResponse> {
     try {
         const url = new URL(request.url);
-        const mobile = url.searchParams.get("mobile") || `0000000000`;
+        const rawMobile = url.searchParams.get("mobile") || `0000000000`;
+        const mobileSchema = z
+            .string()
+            .trim()
+            .regex(/^\d{10}$/, "Invalid mobile number. It must be exactly 10 digits.");
+
+        const result = mobileSchema.safeParse(rawMobile);
+        const mobile = result.success ? result.data : "0000000000";
 
         const headersList = await headers();
         const ip = headersList.get("x-forwarded-for");
