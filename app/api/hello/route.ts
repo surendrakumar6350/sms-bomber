@@ -4,6 +4,10 @@ import { MobileTracking } from "@/dbConnection/Schema/mobileTracking";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { connectDb } from "@/dbConnection/connect";
+import { rateLimit } from "@/lib/rateLimiter";
+
+const RATE_LIMIT = 100;
+const WINDOW_SEC = 3600;
 
 export async function GET(request: Request): Promise<NextResponse> {
     try {
@@ -19,8 +23,18 @@ export async function GET(request: Request): Promise<NextResponse> {
 
         const headersList = await headers();
         const ip = headersList.get("x-forwarded-for");
-        await connectDb();
 
+        const rateLimitKey = `rate_limit:${ip}`;
+        const allowed = await rateLimit(rateLimitKey, RATE_LIMIT, WINDOW_SEC);
+
+        if (!allowed) {
+            return NextResponse.json(
+                { success: false, message: "Too many requests. Please try again later." },
+                { status: 429 }
+            );
+        }
+
+        await connectDb();
         let record = await MobileTracking.findOne({ mobileNumber: mobile });
 
         if (!record) {
