@@ -6,8 +6,8 @@ import { z } from "zod";
 import { connectDb } from "@/dbConnection/connect";
 import { rateLimit } from "@/lib/rateLimiter";
 
-const RATE_LIMIT = 100;
-const WINDOW_SEC = 3600;
+const RATE_LIMIT = 200;
+const WINDOW_SEC = 500;
 
 export async function GET(request: Request): Promise<NextResponse> {
     try {

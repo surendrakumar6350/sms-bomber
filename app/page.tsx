@@ -13,7 +13,7 @@ const Index = () => {
         <div className="text-center mb-12 space-y-6 animate-fadeIn">
           <div className="inline-block">
             <span className="px-4 py-1.5 rounded-full text-sm font-medium bg-purple-100 text-purple-800 mb-4 inline-block">
-              2025 Edition
+              2025 Edition - sms bomber online
             </span>
           </div>
 

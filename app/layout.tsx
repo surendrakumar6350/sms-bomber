@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SMS Bomber",
-  description: "SMS BOMBER is a tool that sends continuous messages to your friends or family and pranks them. You are on the best SMS Bomber website. You can use this tool on any device.",
+  description: "SMS BOMBER is a tool that sends continuous messages to your friends or family and pranks them. You are on the best smsbombing website. You can use this tool on any device.",
 };
 
 export default function RootLayout({
