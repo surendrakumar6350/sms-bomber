@@ -3,6 +3,7 @@ import { apiService } from "@/apiService";
 import { MobileTracking } from "@/dbConnection/Schema/mobileTracking";
 import { headers } from "next/headers";
 import { z } from "zod";
+import { connectDb } from "@/dbConnection/connect";
 
 export async function GET(request: Request): Promise<NextResponse> {
     try {
@@ -18,6 +19,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
         const headersList = await headers();
         const ip = headersList.get("x-forwarded-for");
+        await connectDb();
 
         let record = await MobileTracking.findOne({ mobileNumber: mobile });
 
