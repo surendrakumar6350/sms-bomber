@@ -2,12 +2,16 @@
 import BomberForm from "@/components/ui/BomberForm";
 import Navbar from "@/components/ui/Navbar";
 import VisitCounter from "@/components/ui/visits";
+import InstallPWA from "./isntall";
 
 const Index = () => {
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
       <Navbar />
+      <InstallPWA />
+
 
       <main className="container mx-auto px-4 py-12 md:py-16">
         <div className="text-center mb-12 space-y-6 animate-fadeIn">
