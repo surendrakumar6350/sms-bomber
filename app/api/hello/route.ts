@@ -12,14 +12,20 @@ const WINDOW_SEC = 500;
 export async function GET(request: Request): Promise<NextResponse> {
     try {
         const url = new URL(request.url);
-        const rawMobile = url.searchParams.get("mobile") || `0000000000`;
+        const rawMobile = url.searchParams.get("mobile");
         const mobileSchema = z
             .string()
             .trim()
             .regex(/^\d{10}$/, "Invalid mobile number. It must be exactly 10 digits.");
 
         const result = mobileSchema.safeParse(rawMobile);
-        const mobile = result.success ? result.data : "0000000000";
+        if (!result.success) {
+            return NextResponse.json(
+                { success: false, message: result.error },
+                { status: 400 }
+            );
+        }
+        const mobile = result.data;
 
         const headersList = await headers();
         const ip = headersList.get("x-forwarded-for");
