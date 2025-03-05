@@ -10,7 +10,6 @@ Welcome to the **SMS Bomber** project! This tool is designed for fun purposes, a
 - **Disclaimer Included:** Warns users about intended ethical use.
 
 ## Live Demo
-
 Check out the live version of the project [here](#).
 
 ## Installation
