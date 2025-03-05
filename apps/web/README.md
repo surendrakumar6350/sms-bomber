@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
+# SMS Bomber
 
-## Getting Started
+Welcome to the **SMS Bomber** project! This tool is designed for fun purposes, allowing users to send multiple SMS messages to a specified number. Please use it responsibly and ensure compliance with local laws and regulations.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Easy-to-use Interface:** Intuitive and mobile-friendly design.
+- **Multiple SMS Sending:** Enables sending bulk SMS messages for fun purposes.
+- **Modern UI:** Styled with an eye-catching and clean design.
+- **Disclaimer Included:** Warns users about intended ethical use.
+
+## Live Demo
+Check out the live version of the project [here](#).
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/surendrakumar6350/sms-bomber.git
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd sms-bomber
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the development server:
+   ```bash
+   npm start
+   ```
+5. Open the application in your browser:
+   ```
+   http://localhost:3000
+   ```
+
+## Usage
+
+1. Enter the phone number you wish to target.
+2. Click on the "Send" button.
+3. Enjoy the pranking responsibly!
+
+## Project Structure
+
+```
+|-- public/
+|-- src/
+|   |-- components/
+|   |-- styles/
+|   |-- App.js
+|   |-- index.js
+|-- .gitignore
+|-- package.json
+|-- README.md
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Disclaimer
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+This project is intended for educational and fun purposes only. The developers do not support or promote any misuse of this tool. Use it ethically and ensure compliance with applicable laws.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Inter, a custom Google Font.
+## Contributing
 
-## Learn More
+1. Fork the repository.
+2. Create a new branch:
+   ```bash
+   git checkout -b feature-name
+   ```
+3. Make your changes and commit:
+   ```bash
+   git commit -m "Add new feature"
+   ```
+4. Push to the branch:
+   ```bash
+   git push origin feature-name
+   ```
+5. Submit a pull request.
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This project is licensed under the MIT License. See the `LICENSE` file for details.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contact
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For any questions or suggestions, please contact us at [admin@surendra-dev.in.net].
