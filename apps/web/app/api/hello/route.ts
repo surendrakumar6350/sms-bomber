@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { apiService } from "@/apiService";
+import { apiService } from "@repo/core-services"
 import { MobileTracking } from "@/dbConnection/Schema/mobileTracking";
 import { headers } from "next/headers";
 import { z } from "zod";
