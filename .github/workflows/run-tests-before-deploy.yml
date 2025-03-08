@@ -1,0 +1,39 @@
+name: Run Tests Before Deploying to Vercel
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Create .env file
+        run: |
+          echo "DB=${{ secrets.DB }}" >> .env
+          echo "EXCLUDED_NUMBERS=${{ secrets.EXCLUDED_NUMBERS }}" >> .env
+          echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> .env
+        working-directory: apps/web
+
+      - name: Start Backend Server
+        run: |
+          npm run dev &
+          sleep 10
+        working-directory: apps/web
+
+      - name: Run Tests
+        run: npm test
