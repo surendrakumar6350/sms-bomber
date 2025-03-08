@@ -13,7 +13,7 @@ describe("Mobile Tracking API (/api/hello)", () => {
     it("should return success for a valid mobile number", async () => {
         const response = await request("http://localhost:3000").get("/api/hello?mobile=8234567890");
 
-        expect(response.status).toBe(300);
+        expect(response.status).toBe(200);
         expect(response.body).toHaveProperty("success", true);
         expect(response.body).toHaveProperty("message", "SMS sent successfully.");
     }, 50000);
