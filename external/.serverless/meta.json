@@ -1,0 +1,16 @@
+{
+  "unknown": {
+    "versionFramework": "4.9.0",
+    "error": {
+      "message": "request to https://core.serverless.com/api/bff/ failed, reason: ",
+      "stack": "Error: request to https://core.serverless.com/api/bff/ failed, reason: \n    at Authentication.getClientDataFromAccessKey (file:///home/kali/.serverless/releases/4.9.0/package/dist/sf-core.js:549:18320)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async Authentication.getAuthenticatedData (file:///home/kali/.serverless/releases/4.9.0/package/dist/sf-core.js:549:3689)\n    at async routeNew (file:///home/kali/.serverless/releases/4.9.0/package/dist/sf-core.js:553:23197)\n    at async commandOnboarding (file:///home/kali/.serverless/releases/4.9.0/package/dist/sf-core.js:553:20182)\n    at async _CoreRunner.run (file:///home/kali/.serverless/releases/4.9.0/package/dist/sf-core.js:580:8507)\n    at async route (file:///home/kali/.serverless/releases/4.9.0/package/dist/sf-core.js:877:2779)\n    at async Object.run (file:///home/kali/.serverless/releases/4.9.0/package/dist/sf-core.js:878:3661)\n    at async run2 (file:///home/kali/.serverless/releases/4.9.0/package/dist/sf-core.js:878:4814)"
+    },
+    "command": [],
+    "options": {},
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}
