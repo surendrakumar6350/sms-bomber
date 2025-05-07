@@ -1,51 +1,104 @@
-"use client"
-import BomberForm from "@/components/ui/BomberForm";
-import Navbar from "@/components/ui/Navbar";
-import VisitCounter from "@/components/ui/visits";
+"use client";
 
-const Index = () => {
+import React, { useState, useRef } from 'react';
+import axios from 'axios';
+import Header from '@/components/v2/components/Header';
+import PhoneInput from '@/components/v2/components/PhoneInput';
+import StatusPanel from '@/components/v2/components/StatusPanel';
+import Footer from '@/components/v2/components/Footer';
+import ParticleBackground from '@/components/v2/components/ParticleBackground';
+
+function App() {
+  const [isActive, setIsActive] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
+  const [messagesSent, setMessagesSent] = useState(0);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const numberRef = useRef<string | null>(null);
+
+  const startBombing = async () => {
+    if (!numberRef.current) return;
+
+    try {
+      const response = await axios.get(`/api/hello?mobile=${numberRef.current}`);
+      if (!response.data.success) {
+        alert(response.data.message);
+      }
+
+      setMessagesSent(prev => prev + Math.floor(Math.random() * 3) + 1);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const handleStop = () => {
+    setIsActive(false);
+    setMessagesSent(0);
+
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+  };
+
+  const handleSubmit = async (number: string) => {
+    setPhoneNumber(number);
+    numberRef.current = number;
+    setIsActive(true);
+    setMessagesSent(0);
+    setStartTime(new Date());
+
+    try {
+      await startBombing();
+      const id = setInterval(startBombing, 5000);
+      setIntervalId(id);
+    } catch (error) {
+      console.error("API Error:", error);
+      handleStop();
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-transparent text-white relative">
+      <ParticleBackground />
+      <Header />
 
-      <main className="container mx-auto px-4 py-12 md:py-16">
-        <div className="text-center mb-12 space-y-6 animate-fadeIn">
-          <div className="inline-block">
-            <span className="px-4 py-1.5 rounded-full text-sm font-medium bg-purple-100 text-purple-800 mb-4 inline-block">
-              2025 Edition - sms bomber online
-            </span>
+      <main className="flex-1 flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
+              SMS Bombing Service
+            </h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Enter an Indian mobile number and hit the button to start SMS bombing. Our system will send multiple messages to the target number.
+            </p>
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">
-            <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Welcome To SMS Bomber
-            </span>
-          </h1>
+          <div className="flex flex-col items-center">
+            <PhoneInput onSubmit={handleSubmit} isActive={isActive} />
 
-          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Experience the most powerful SMS bombing service on the internet.
-            Perfect for pranking friends with our mobile-friendly and easy-to-use platform.
-          </p>
-        </div>
+            <StatusPanel
+              isActive={isActive}
+              phoneNumber={phoneNumber}
+              messagesSent={messagesSent}
+              startTime={startTime}
+            />
 
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-100/50 p-6 md:p-8">
-            <BomberForm />
+            {isActive && (
+              <button
+                onClick={handleStop}
+                className="mt-6 px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+              >
+                Stop Operation
+              </button>
+            )}
           </div>
-        </div>
-        <VisitCounter />
-
-        <div className="mt-12 text-center text-sm text-gray-500">
-          <p className="animate-pulse">
-            🔒 Safe & Secure • 100% Anonymous • No Registration Required
-          </p>
         </div>
       </main>
 
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(45%_25%_at_50%_50%,rgba(124,58,237,0.05)_0%,rgba(124,58,237,0)_100%)]" />
+      <Footer />
     </div>
   );
-};
+}
 
-export default Index;
+export default App;
