@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, UserCheck, MessageSquare, Check, CheckCheck } from 'lucide-react';
+import { X, UserCheck, MessageSquare, CheckCheck } from 'lucide-react';
 
 const notifications = [
   {
