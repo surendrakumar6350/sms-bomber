@@ -37,3 +37,67 @@ jobs:
 
       - name: Run Tests
         run: npm test
+        
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: test 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create .env file
+        run: |
+          echo "DB=${{ secrets.DB }}" >> apps/web/.env
+          echo "EXCLUDED_NUMBERS=${{ secrets.EXCLUDED_NUMBERS }}" >> apps/web/.env
+          echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> apps/web/.env
+          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> apps/web/.env
+
+      - name: Build project
+        run: npm run build
+
+      - name: Archive production build
+        run: tar -czf build.tar.gz \
+          apps/web/.next \
+          apps/web/public \
+          apps/web/package.json \
+          apps/web/next.config.js \
+          apps/web/.env \
+          packages \
+          turbo.json \
+          apps/web/tsconfig.json \
+        
+      - name: Setup SSH key
+        run: |
+          echo "${{ secrets.EC2_PEM_KEY }}" > key.pem
+          chmod 400 key.pem
+
+      - name: Copy build to EC2
+        run: |
+          scp -i key.pem -o StrictHostKeyChecking=no build.tar.gz ubuntu@${{ secrets.S_IP }}:/home/ubuntu/
+
+      - name: SSH into EC2, clone repo, and deploy
+        run: |
+          ssh -i key.pem -o StrictHostKeyChecking=no -tt ubuntu@${{ secrets.S_IP }} << 'EOF'
+            rm -rf sms-bomber
+            mkdir sms-bomber
+            tar -xzf build.tar.gz -C sms-bomber
+            cd sms-bomber/apps/web
+
+            npm install
+            
+            pm2 delete sms-bomber || true
+            pm2 start npm --name "sms-bomber" -- run start
+            echo "✅ deployed successfully"
+            exit 0
+          EOF
