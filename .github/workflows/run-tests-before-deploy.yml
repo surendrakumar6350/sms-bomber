@@ -68,16 +68,16 @@ jobs:
 
       - name: Archive production build
         run: |
-          cd apps/web
-          tar -czf ../../build.tar.gz \
-            .next \
-            public \
-            package.json \
-            next.config.ts \
-            .env \
-            ../../packages \
-            ../../turbo.json \
-            tsconfig.json
+          tar -czf build.tar.gz \
+            apps/web/.next \
+            apps/web/public \
+            apps/web/package.json \
+            apps/web/tsconfig.json \
+            apps/web/.env \
+            apps/web/next.config.ts \
+            packages \
+            turbo.json
+            package.json
         
       - name: Setup SSH key
         run: |
