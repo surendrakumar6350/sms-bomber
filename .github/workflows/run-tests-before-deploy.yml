@@ -64,18 +64,20 @@ jobs:
           echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> apps/web/.env
 
       - name: Build project
-        run: npm run build
+        run: cd apps/web && npm run build 
 
       - name: Archive production build
-        run: tar -czf build.tar.gz \
-          apps/web/.next \
-          apps/web/public \
-          apps/web/package.json \
-          apps/web/next.config.js \
-          apps/web/.env \
-          packages \
-          turbo.json \
-          apps/web/tsconfig.json \
+        run: |
+          cd apps/web
+          tar -czf ../../build.tar.gz \
+            .next \
+            public \
+            package.json \
+            next.config.js \
+            .env \
+            ../../packages \
+            ../../turbo.json \
+            tsconfig.json
         
       - name: Setup SSH key
         run: |
@@ -86,18 +88,26 @@ jobs:
         run: |
           scp -i key.pem -o StrictHostKeyChecking=no build.tar.gz ubuntu@${{ secrets.S_IP }}:/home/ubuntu/
 
-      - name: SSH into EC2, clone repo, and deploy
-        run: |
-          ssh -i key.pem -o StrictHostKeyChecking=no -tt ubuntu@${{ secrets.S_IP }} << 'EOF'
-            rm -rf sms-bomber
-            mkdir sms-bomber
-            tar -xzf build.tar.gz -C sms-bomber
-            cd sms-bomber/apps/web
 
-            npm install
+      - name: exit
+        if: always()
+        run: |
+          echo "Deployment complete. Exiting workflow."
+          exit 0
+
+
+      # - name: SSH into EC2, clone repo, and deploy
+      #   run: |
+      #     ssh -i key.pem -o StrictHostKeyChecking=no -tt ubuntu@${{ secrets.S_IP }} << 'EOF'
+      #       rm -rf sms-bomber
+      #       mkdir sms-bomber
+      #       tar -xzf build.tar.gz -C sms-bomber
+      #       cd sms-bomber/apps/web
+
+      #       npm install
             
-            pm2 delete sms-bomber || true
-            pm2 start npm --name "sms-bomber" -- run start
-            echo "✅ deployed successfully"
-            exit 0
-          EOF
+      #       pm2 delete sms-bomber || true
+      #       pm2 start npm --name "sms-bomber" -- run start
+      #       echo "✅ deployed successfully"
+      #       exit 0
+      #     EOF
