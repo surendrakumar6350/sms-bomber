@@ -76,7 +76,7 @@ jobs:
             apps/web/.env \
             apps/web/next.config.ts \
             packages \
-            turbo.json
+            turbo.json \
             package.json
         
       - name: Setup SSH key
