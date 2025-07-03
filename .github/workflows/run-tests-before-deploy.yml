@@ -90,25 +90,16 @@ jobs:
           scp -i key.pem -o StrictHostKeyChecking=no build.tar.gz ubuntu@${{ secrets.S_IP }}:/home/ubuntu/
 
 
-      - name: exit
-        if: always()
+      - name: SSH into EC2 and deploy
         run: |
-          echo "Deployment complete. Exiting workflow."
-          exit 0
-
-
-      # - name: SSH into EC2, clone repo, and deploy
-      #   run: |
-      #     ssh -i key.pem -o StrictHostKeyChecking=no -tt ubuntu@${{ secrets.S_IP }} << 'EOF'
-      #       rm -rf sms-bomber
-      #       mkdir sms-bomber
-      #       tar -xzf build.tar.gz -C sms-bomber
-      #       cd sms-bomber/apps/web
-
-      #       npm install
+          ssh -i key.pem -o StrictHostKeyChecking=no -tt ubuntu@${{ secrets.S_IP }} << 'EOF'
+            rm -rf sms-bomber
+            mkdir sms-bomber
+            tar -xzf build.tar.gz -C sms-bomber
+            cd sms-bomber/apps/web
             
-      #       pm2 delete sms-bomber || true
-      #       pm2 start npm --name "sms-bomber" -- run start
-      #       echo "✅ deployed successfully"
-      #       exit 0
-      #     EOF
+            pm2 delete sms-bomber || true
+            pm2 start npm --name "sms-bomber" -- run start
+            echo "✅ deployed successfully"
+            exit 0
+          EOF
