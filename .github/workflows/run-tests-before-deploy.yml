@@ -100,7 +100,7 @@ jobs:
             cd sms-bomber/apps/web
             
             pm2 delete sms-bomber || true
-            pm2 start npm --name "sms-bomber" -- run start
+            PORT=8081 pm2 start npm --name "sms-bomber" -- run start
             echo "✅ deployed successfully"
             exit 0
           EOF
