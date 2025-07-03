@@ -1,0 +1,11 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "Running build before push..."
+
+npm run build
+
+if [ $? -ne 0 ]; then
+  echo "Push aborted due to errors."
+  exit 1
+fi
