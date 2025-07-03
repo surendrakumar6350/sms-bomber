@@ -6,8 +6,8 @@ import { z } from "zod";
 import { connectDb } from "@/dbConnection/connect";
 import { rateLimit } from "@/lib/rateLimiter";
 
-const RATE_LIMIT = 200;
-const WINDOW_SEC = 500;
+const RATE_LIMIT = 6; // 6 requests
+const WINDOW_SEC = 5; // 5 seconds
 
 export async function GET(request: Request): Promise<NextResponse> {
     try {
@@ -39,7 +39,6 @@ export async function GET(request: Request): Promise<NextResponse> {
                 { status: 400 }
             );
         }
-
 
         const rateLimitKey = `rate_limit:${ip}`;
         const allowed = await rateLimit(rateLimitKey, RATE_LIMIT, WINDOW_SEC);
