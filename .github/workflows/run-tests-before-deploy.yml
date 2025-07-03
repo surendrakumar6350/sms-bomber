@@ -27,6 +27,7 @@ jobs:
           echo "DB=${{ secrets.DB }}" >> .env
           echo "EXCLUDED_NUMBERS=${{ secrets.EXCLUDED_NUMBERS }}" >> .env
           echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> .env
+          echo "NODE_ENVV=${{ secrets.NODE_ENV }}" >> .env
         working-directory: apps/web
 
       - name: Start Backend Server
@@ -61,7 +62,7 @@ jobs:
           echo "DB=${{ secrets.DB }}" >> apps/web/.env
           echo "EXCLUDED_NUMBERS=${{ secrets.EXCLUDED_NUMBERS }}" >> apps/web/.env
           echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> apps/web/.env
-          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> apps/web/.env
+          echo "NODE_ENVV=${{ secrets.NODE_ENV }}" >> apps/web/.env
 
       - name: Build project
         run: cd apps/web && npm run build 

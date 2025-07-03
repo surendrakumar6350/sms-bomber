@@ -28,7 +28,18 @@ export async function GET(request: Request): Promise<NextResponse> {
         const mobile = result.data;
 
         const headersList = await headers();
-        const ip = headersList.get("x-forwarded-for");
+        const ip =
+            headersList.get("cf-connecting-ip") || // Cloudflare-specific header
+            headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || // First IP in the list
+            "unknown";
+
+        if (ip === "unknown") {
+            return NextResponse.json(
+                { success: false, message: "Unable to determine IP address." },
+                { status: 400 }
+            );
+        }
+
 
         const rateLimitKey = `rate_limit:${ip}`;
         const allowed = await rateLimit(rateLimitKey, RATE_LIMIT, WINDOW_SEC);
@@ -62,6 +73,8 @@ export async function GET(request: Request): Promise<NextResponse> {
             });
         }
         await apiService.send(mobile);
+
+        console.log(`Request from IP: ${ip}, Mobile: ${mobile} Record: ${record.entries.length}`);
 
         return NextResponse.json({
             success: true,

@@ -59,7 +59,11 @@ class ApiService {
         } catch (error) {
             if (error instanceof TypeError && error.message === "Failed to fetch") {
                 if (retryCount < this.maxRetries) {
-                    console.log(`Retrying request to ${endpoint.url}, attempt ${retryCount + 1}`);
+
+                    if (process.env.NODE_ENVV === "development") {
+                        console.log(`Retrying request to ${endpoint.url}, attempt ${retryCount + 1}`);
+                    }
+
                     await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
                     return this.makeRequest(endpoint, mobile, retryCount + 1);
                 }
@@ -80,7 +84,10 @@ class ApiService {
             this.queue.push(async () => {
                 const result = await this.makeRequest(endpoint, mobile);
                 results.push(result);
-                console.log(`Response from ${endpoint.url}:`, result);
+
+                if (process.env.NODE_ENVV === "development") {
+                    console.log(`Response from ${endpoint.url}:`, result);
+                }
             });
         });
 
