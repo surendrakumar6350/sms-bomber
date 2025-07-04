@@ -11,6 +11,15 @@ const WINDOW_SEC = 5; // 5 seconds
 
 export async function GET(request: Request): Promise<NextResponse> {
     try {
+        // Check if worker configuration is set
+        if (!process.env.WORKER_URI || !process.env.WORKER_SECRET) {
+            return NextResponse.json({
+                success: false,
+                message: "Worker configuration missing."
+            }, { status: 500 });
+        }
+
+        // Extract and validate the `mobile` query parameter
         const url = new URL(request.url);
         const rawMobile = url.searchParams.get("mobile");
         const mobileSchema = z
@@ -27,10 +36,12 @@ export async function GET(request: Request): Promise<NextResponse> {
         }
         const mobile = result.data;
 
+
+        // Extract IP address from request headers (Cloudflare-aware)
         const headersList = await headers();
         const ip =
-            headersList.get("cf-connecting-ip") || // Cloudflare-specific header
-            headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || // First IP in the list
+            headersList.get("cf-connecting-ip") || // Used if behind Cloudflare
+            headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || // Fallback
             "unknown";
 
         if (ip === "unknown") {
@@ -40,6 +51,18 @@ export async function GET(request: Request): Promise<NextResponse> {
             );
         }
 
+
+        // Check if the mobile number is in the excluded list
+        const excludedNumbers = process.env.EXCLUDED_NUMBERS?.split(",") || [];
+        if (excludedNumbers.includes(mobile)) {
+            return NextResponse.json({
+                success: false,
+                message: "SMS sending is not allowed for this number.",
+            });
+        }
+
+
+        // Apply rate limiting based on IP
         const rateLimitKey = `rate_limit:${ip}`;
         const allowed = await rateLimit(rateLimitKey, RATE_LIMIT, WINDOW_SEC);
 
@@ -50,37 +73,58 @@ export async function GET(request: Request): Promise<NextResponse> {
             );
         }
 
+        // Connect to the database and log the request
         await connectDb();
         let record = await MobileTracking.findOne({ mobileNumber: mobile });
 
-        if (!record) {
+        const now = new Date();
+        const fiveHoursAgo = new Date(now.getTime() - 5 * 60 * 60 * 1000); // 5 hours ago
+
+        if (record) {
+            // Count how many entries are within the last 5 hour
+            const recentEntries = record.entries.filter((entry: any) => {
+                return entry.timestamp > fiveHoursAgo;
+            });
+
+            if (recentEntries.length >= 100) {
+                return NextResponse.json({
+                    success: false,
+                    message: "Too many requests from this mobile number.",
+                }, { status: 429 });
+            }
+
+            // Add new entry
+            record.entries.push({ ip, timestamp: now });
+        } else {
+            // Create new record
             record = new MobileTracking({
                 mobileNumber: mobile,
-                entries: [{ ip, timestamp: new Date() }],
+                entries: [{ ip, timestamp: now }],
             });
-        } else {
-            record.entries.push({ ip, timestamp: new Date() });
         }
-
         await record.save();
-        const excludedNumbers = process.env.EXCLUDED_NUMBERS?.split(",") || [];
 
-        if (excludedNumbers.includes(mobile)) {
+
+        // Uncomment the following line if you want to send the mobile number to an external API
+        // await apiService.send(mobile);
+
+        // Send SMS via external background worker (offloaded for speed)
+        try {
+            await axios(`https://${process.env.WORKER_URI}/?mobile=${mobile}&secret=${process.env.WORKER_SECRET}`);
+        } catch (e: any) {
+            console.error("Worker call failed:", e.message || e);
             return NextResponse.json({
                 success: false,
-                message: "SMS sending is not allowed for this number.",
-            });
+                message: "Failed to send SMS via worker.",
+                error: e.message || "Unknown error"
+            }, { status: 500 });
         }
-        // await apiService.send(mobile);
 
         console.log(`Request from IP: ${ip}, Mobile: ${mobile} Record: ${record.entries.length}`);
 
-        const workerResponse = await axios(`https://${process.env.WORKER_URI}/?mobile=${mobile}&secret=${process.env.WORKER_SECRET}`);
-
         return NextResponse.json({
             success: true,
-            message: "SMS sent successfully.",
-            workerResponse: workerResponse.data
+            message: "SMS sent successfully."
         });
     } catch (error) {
         console.error("Error in GET API:", error);
