@@ -1,0 +1,19 @@
+org: surendrakumar
+service: worker
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-south-1
+
+functions:
+  hello:
+    handler: dist/handler.hello
+    timeout: 60
+    events:
+      - httpApi:
+          path: /
+          method: get
+
+plugins:
+  - serverless-offline

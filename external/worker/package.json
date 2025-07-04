@@ -1,0 +1,27 @@
+{
+  "name": "worker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && serverless offline",
+    "dev": "npm run build && serverless offline",
+    "deploy": "npm run build && serverless deploy"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "serverless": "^4.14.4",
+    "serverless-offline": "^14.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@types/aws-lambda": "^8.10.149",
+    "aws-lambda": "^1.0.7",
+    "dotenv": "^16.5.0",
+    "zod": "^3.25.28"
+  }
+}
