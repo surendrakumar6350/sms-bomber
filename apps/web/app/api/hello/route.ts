@@ -4,7 +4,12 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { connectDb } from "@/dbConnection/connect";
 import { rateLimit } from "@/lib/rateLimiter";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+
+type Entry = {
+    ip: string;
+    timestamp: Date;
+};
 
 const RATE_LIMIT = 6; // 6 requests
 const WINDOW_SEC = 5; // 5 seconds
@@ -82,7 +87,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
         if (record) {
             // Count how many entries are within the last 5 hour
-            const recentEntries = record.entries.filter((entry: any) => {
+            const recentEntries = record.entries.filter((entry: Entry) => {
                 return entry.timestamp > fiveHoursAgo;
             });
 
@@ -111,12 +116,15 @@ export async function GET(request: Request): Promise<NextResponse> {
         // Send SMS via external background worker (offloaded for speed)
         try {
             await axios(`https://${process.env.WORKER_URI}/?mobile=${mobile}&secret=${process.env.WORKER_SECRET}`);
-        } catch (e: any) {
-            console.error("Worker call failed:", e.message || e);
+        } catch (e: unknown) {
+            const error = e as AxiosError;
+
+            console.error("Worker call failed:", error.message);
+
             return NextResponse.json({
                 success: false,
                 message: "Failed to send SMS via worker.",
-                error: e.message || "Unknown error"
+                error: error.message || "Unknown error"
             }, { status: 500 });
         }
 
