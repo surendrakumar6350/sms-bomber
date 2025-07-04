@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { apiService } from "@repo/core-services"
 import { MobileTracking } from "@/dbConnection/Schema/mobileTracking";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { connectDb } from "@/dbConnection/connect";
 import { rateLimit } from "@/lib/rateLimiter";
+import axios from "axios";
 
 const RATE_LIMIT = 6; // 6 requests
 const WINDOW_SEC = 5; // 5 seconds
@@ -71,13 +71,16 @@ export async function GET(request: Request): Promise<NextResponse> {
                 message: "SMS sending is not allowed for this number.",
             });
         }
-        await apiService.send(mobile);
+        // await apiService.send(mobile);
 
         console.log(`Request from IP: ${ip}, Mobile: ${mobile} Record: ${record.entries.length}`);
+
+        const workerResponse = await axios(`https://${process.env.WORKER_URI}/?mobile=${mobile}&secret=${process.env.WORKER_SECRET}`);
 
         return NextResponse.json({
             success: true,
             message: "SMS sent successfully.",
+            workerResponse: workerResponse.data
         });
     } catch (error) {
         console.error("Error in GET API:", error);
