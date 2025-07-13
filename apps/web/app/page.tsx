@@ -1,14 +1,13 @@
 "use client"
 import React, { useState, useRef } from 'react';
-import Header from '@/components/Header';
-import PhoneInput from '@/components/PhoneInput';
-import StatusPanel from '@/components/StatusPanel';
-import Footer from '@/components/Footer';
-import ParticleBackground from '@/components/ParticleBackground';
-import ProcessingHistory, { HistoryEntry } from '@/components/ProcessingHistory';
-import { useToast } from '@/components/Toast';
+import Header from '../components/Header';
+import PhoneInput from '../components/PhoneInput';
+import StatusPanel from '../components/StatusPanel';
+import Footer from '../components/Footer';
+import ParticleBackground from '../components/ParticleBackground';
+import ProcessingHistory, { HistoryEntry } from '../components/ProcessingHistory';
+import { useToast } from '../components/Toast';
 import axios, { AxiosError } from 'axios';
-
 
 function App() {
   const [isActive, setIsActive] = useState(false);
@@ -25,50 +24,53 @@ function App() {
 
     try {
       await axios.get(`/api/hello?mobile=${phoneNumber.current}`);
-
       setMessagesSent(prev => prev + Math.floor(Math.random() * 3) + 1);
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
-
       console.error("Error:", axiosError);
 
+      // Stop the operation on any server error and clear interval
       addToast({
         type: 'error',
-        message: axiosError.response?.data?.message || 'Failed to send SMS'
+        message: axiosError.response?.data?.message || `Server error (${axiosError.response?.status || 'Unknown'}). Operation stopped.`
       });
+
+      // Force stop the bombing process immediately on error
+      handleStop();
+      throw error; // Re-throw to prevent further execution
     }
   };
 
-
   const handleStop = () => {
-    if (!isActive || !startTime || !phoneNumber.current) return;
-
-    const endTime = new Date();
-    const duration = calculateDuration(startTime, endTime);
-
-    // Add to history
-    const historyEntry: HistoryEntry = {
-      id: Math.random().toString(36).substring(2, 9),
-      phoneNumber: phoneNumber.current.toString(),
-      messagesSent,
-      startTime,
-      endTime,
-      duration
-    };
-
-    setHistory(prev => [historyEntry, ...prev].slice(0, 10));
-
-
+    // Always clear interval first
     if (intervalId) {
       clearInterval(intervalId);
       setIntervalId(null);
     }
 
-    addToast({
-      type: 'success',
-      message: `Operation completed! Sent ${messagesSent} messages to +91${phoneNumber.current.toString()} in ${duration}`
-    });
+    // Only add to history if we have valid data and was actually active
+    if (isActive && startTime && phoneNumber.current) {
+      const endTime = new Date();
+      const duration = calculateDuration(startTime, endTime);
 
+      const historyEntry: HistoryEntry = {
+        id: Math.random().toString(36).substring(2, 9),
+        phoneNumber: phoneNumber.current.toString(),
+        messagesSent,
+        startTime,
+        endTime,
+        duration
+      };
+
+      setHistory(prev => [historyEntry, ...prev].slice(0, 10));
+
+      addToast({
+        type: 'success',
+        message: `Operation completed! Sent ${messagesSent} messages to +91${phoneNumber.current.toString()} in ${duration}`
+      });
+    }
+
+    // Reset all states
     setIsActive(false);
     setMessagesSent(0);
     phoneNumber.current = "";
@@ -88,21 +90,18 @@ function App() {
       message: `Process started for +91${number}`
     });
 
-    try {
-      // Start immediate bombing
-      simulateBombing();
+    // Set up interval for continuous bombing (including first request)
+    const id = setInterval(async () => {
+      try {
+        await simulateBombing();
+      } catch (error) {
+        // Error is already handled in simulateBombing, interval will be cleared by handleStop
+        console.error("Interval bombing error:", error);
+      }
+    }, 8000);
 
-      // Set up interval for continuous bombing
-      const id = setInterval(simulateBombing, 3000);
-      setIntervalId(id);
-    } catch (error) {
-      console.error("Error:", error);
-      addToast({
-        type: 'error',
-        message: 'Failed to start the bombing process'
-      });
-      handleStop();
-    }
+    setIntervalId(id);
+
   };
 
   const calculateDuration = (start: Date, end: Date): string => {

@@ -1,76 +1,134 @@
-import React, { useEffect } from 'react';
-import { CheckCircle, XCircle, AlertCircle, X } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { X, CheckCircle, AlertCircle, XCircle, Info } from 'lucide-react';
 
-export interface ToastProps {
-  id: string;
+export type ToastType = 'success' | 'error' | 'warning' | 'info';
+
+export interface Toast {
+  id?: string;
+  type: ToastType;
   message: string;
-  type: 'success' | 'error' | 'warning';
   duration?: number;
-  onClose: (id: string) => void;
 }
 
-const Toast: React.FC<ToastProps> = ({ id, message, type, duration = 5000, onClose }) => {
+interface ToastWithId extends Toast {
+  id: string;
+}
+
+const TOAST_ICONS = {
+  success: CheckCircle,
+  error: XCircle,
+  warning: AlertCircle,
+  info: Info,
+};
+
+const TOAST_COLORS = {
+  success: 'bg-green-500 border-green-600',
+  error: 'bg-red-500 border-red-600',
+  warning: 'bg-yellow-500 border-yellow-600',
+  info: 'bg-blue-500 border-blue-600',
+};
+
+const ToastComponent: React.FC<{
+  toast: ToastWithId;
+  onClose: (id: string) => void;
+}> = ({ toast, onClose }) => {
+  const Icon = TOAST_ICONS[toast.type];
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      onClose(id);
-    }, duration);
+      onClose(toast.id);
+    }, toast.duration || 4000);
 
     return () => clearTimeout(timer);
-  }, [id, duration, onClose]);
-
-  const icons = {
-    success: CheckCircle,
-    error: XCircle,
-    warning: AlertCircle,
-  };
-
-  const colors = {
-    success: 'bg-green-500/90 text-white border-green-400',
-    error: 'bg-red-500/90 text-white border-red-400',
-    warning: 'bg-yellow-500/90 text-white border-yellow-400',
-  };
-
-  const Icon = icons[type];
+  }, [toast.id, toast.duration, onClose]);
 
   return (
-    <div className={`
-      flex items-center space-x-3 p-4 rounded-lg border backdrop-blur-sm
-      animate-slideIn transform transition-all duration-300 ease-out
-      ${colors[type]}
-    `}>
-      <Icon className="h-5 w-5 flex-shrink-0" />
-      <p className="flex-1 text-sm font-medium">{message}</p>
+    <div
+      className={`
+        ${TOAST_COLORS[toast.type]}
+        text-white p-4 rounded-lg shadow-lg border-l-4 
+        transform transition-all duration-300 ease-in-out
+        flex items-center justify-between gap-3 max-w-md w-full
+        animate-slide-in
+      `}
+    >
+      <div className="flex items-center gap-3">
+        <Icon className="w-5 h-5 flex-shrink-0" />
+        <span className="text-sm font-medium leading-tight">{toast.message}</span>
+      </div>
       <button
-        onClick={() => onClose(id)}
-        className="flex-shrink-0 hover:bg-white/20 rounded p-1 transition-colors"
+        onClick={() => onClose(toast.id)}
+        className="p-1 hover:bg-white/20 rounded transition-colors flex-shrink-0"
       >
-        <X className="h-4 w-4" />
+        <X className="w-4 h-4" />
       </button>
     </div>
   );
 };
 
 export const useToast = () => {
-  const [toasts, setToasts] = React.useState<ToastProps[]>([]);
+  const [toasts, setToasts] = useState<ToastWithId[]>([]);
 
-  const addToast = (toast: Omit<ToastProps, 'id' | 'onClose'>) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    setToasts(prev => [...prev, { ...toast, id, onClose: removeToast }]);
-  };
+  const addToast = useCallback((toast: Toast) => {
+    const id = toast.id || Math.random().toString(36).substring(2, 9);
+    const newToast: ToastWithId = { ...toast, id };
 
-  const removeToast = (id: string) => {
+    // Only keep the latest 3 toasts to avoid screen clutter
+    setToasts(prev => {
+      const updated = [newToast, ...prev];
+      return updated.slice(0, 3); // Keep only the latest 3 toasts
+    });
+  }, []);
+
+  const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
-  };
+  }, []);
 
-  const ToastContainer = () => (
-    <div className="fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full">
-      {toasts.map(toast => (
-        <Toast key={toast.id} {...toast} />
+  const clearAllToasts = useCallback(() => {
+    setToasts([]);
+  }, []);
+
+  const ToastContainer: React.FC = () => (
+    <div className="fixed top-4 right-4 z-50 space-y-2">
+      {toasts.map((toast) => (
+        <ToastComponent
+          key={toast.id}
+          toast={toast}
+          onClose={removeToast}
+        />
       ))}
     </div>
   );
 
-  return { addToast, ToastContainer };
+  return {
+    addToast,
+    removeToast,
+    clearAllToasts,
+    ToastContainer,
+  };
 };
 
-export default Toast;
+// Add custom animations to global CSS
+const toastStyles = `
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = toastStyles;
+  document.head.appendChild(styleElement);
+}
