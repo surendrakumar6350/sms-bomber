@@ -11,6 +11,7 @@ import axios, { AxiosError } from 'axios';
 import Cookies from "js-cookie";
 import { useEffect } from 'react';
 import TurnstileWrapper from '@/components/TurnstileWrapper';
+import FeedbackModal from '@/components/FeedbackModal';
 
 function App() {
   const [isActive, setIsActive] = useState(false);
@@ -24,6 +25,7 @@ function App() {
   const [hasBotToken, setHasBotToken] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [turnstileKey, setTurnstileKey] = useState(0);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
 
 
@@ -48,11 +50,10 @@ function App() {
         setHasBotToken(false); // Show Turnstile again
         setTurnstileKey(prev => prev + 1);
 
-        handleStop(); // stop interval + reset state
+        handleStop();
         throw error;
       }
 
-      // Show toast and stop
       addToast({
         type: 'error',
         message: errorMessage
@@ -149,6 +150,39 @@ function App() {
     });
   };
 
+  const handleFeedbackSubmit = async (feedback: { rating: number; message: string }) => {
+    if (!feedback.message.trim()) {
+      addToast({
+        type: 'error',
+        message: 'Feedback message cannot be empty.'
+      });
+      return;
+    }
+    if (feedback.rating < 1 || feedback.rating > 5) {
+      addToast({
+        type: 'error',
+        message: 'Rating must be between 1 and 5.'
+      });
+      return;
+    }
+    // Send feedback to the server
+    try {
+      await axios.post('/api/feedback', feedback);
+      addToast({
+        type: 'success',
+        message: 'Thank you for your feedback! We appreciate your input.'
+      });
+
+    } catch (error) {
+      console.error("Feedback submission error:", error);
+      addToast({
+        type: 'error',
+        message: 'Failed to submit feedback. Please try again later.'
+      });
+    }
+  };
+
+
   useEffect(() => {
     const token = Cookies.get("bot_token");
     setHasBotToken(!!token);
@@ -165,7 +199,7 @@ function App() {
         <div className="w-full max-w-4xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
-              SMS Testing Tool
+              SMS BOMBER
             </h2>
             <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-lg leading-relaxed">
               Enter an Indian mobile number and hit the button to start SMS bombing.
@@ -210,7 +244,14 @@ function App() {
         </div>
       </main>
 
-      <Footer />
+      <Footer setIsFeedbackModalOpen={setIsFeedbackModalOpen} />
+
+      <FeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+        onSubmitFeedback={handleFeedbackSubmit}
+      />
+
     </div>
   );
 }
