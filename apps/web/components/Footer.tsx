@@ -1,5 +1,5 @@
 import React from 'react';
-import { Github, Heart, Shield } from 'lucide-react';
+import {  Heart, Shield } from 'lucide-react';
 import FeedbackTrigger from './FeedbackTrigger';
 
 type FooterProps = {
