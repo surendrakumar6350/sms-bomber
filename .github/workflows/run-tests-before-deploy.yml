@@ -30,6 +30,9 @@ jobs:
           echo "NODE_ENVV=${{ secrets.NODE_ENV }}" >> .env
           echo "WORKER_URI=${{ secrets.WORKER_URI }}" >> .env
           echo "WORKER_SECRET=${{ secrets.WORKER_SECRET }}" >> .env
+          echo "NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}" >> .env
+          echo "TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SECRET_KEY }}" >> .env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
         working-directory: apps/web
 
       - name: Start Backend Server
@@ -67,6 +70,9 @@ jobs:
           echo "NODE_ENVV=${{ secrets.NODE_ENV }}" >> apps/web/.env
           echo "WORKER_URI=${{ secrets.WORKER_URI }}" >> apps/web/.env
           echo "WORKER_SECRET=${{ secrets.WORKER_SECRET }}" >> apps/web/.env
+          echo "NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}" >> apps/web/.env
+          echo "TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SECRET_KEY }}" >> apps/web/.env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> apps/web/.env
 
       - name: Build project
         run: cd apps/web && npm run build 
