@@ -8,6 +8,9 @@ import ParticleBackground from '../components/ParticleBackground';
 import ProcessingHistory, { HistoryEntry } from '../components/ProcessingHistory';
 import { useToast } from '../components/Toast';
 import axios, { AxiosError } from 'axios';
+import Cookies from "js-cookie";
+import { useEffect } from 'react';
+import TurnstileWrapper from '@/components/TurnstileWrapper';
 
 function App() {
   const [isActive, setIsActive] = useState(false);
@@ -18,6 +21,11 @@ function App() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const numberRef = useRef<string | null>(null);
   const { addToast, ToastContainer } = useToast();
+  const [hasBotToken, setHasBotToken] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
+
+
 
   const simulateBombing = async () => {
     if (!phoneNumber.current) return;
@@ -29,15 +37,29 @@ function App() {
       const axiosError = error as AxiosError<{ message: string }>;
       console.error("Error:", axiosError);
 
-      // Stop the operation on any server error and clear interval
+      const errorMessage = axiosError.response?.data?.message || `Server error (${axiosError.response?.status || 'Unknown'}). Operation stopped.`;
+
+      // ✅ Check for bot_token error
+      if (
+        errorMessage === "Invalid or expired bot_token." ||
+        errorMessage === "Missing bot_token."
+      ) {
+        Cookies.remove("bot_token"); // Clear the cookie
+        setHasBotToken(false); // Show Turnstile again
+        setTurnstileKey(prev => prev + 1);
+
+        handleStop(); // stop interval + reset state
+        throw error;
+      }
+
+      // Show toast and stop
       addToast({
         type: 'error',
-        message: axiosError.response?.data?.message || `Server error (${axiosError.response?.status || 'Unknown'}). Operation stopped.`
+        message: errorMessage
       });
 
-      // Force stop the bombing process immediately on error
       handleStop();
-      throw error; // Re-throw to prevent further execution
+      throw error;
     }
   };
 
@@ -78,6 +100,14 @@ function App() {
   };
 
   const handleSubmit = async (number: string) => {
+    if (!hasBotToken) {
+      addToast({
+        type: 'error',
+        message: 'Please complete the security check first.'
+      });
+      return;
+    }
+
     phoneNumber.current = number;
     numberRef.current = number;
     setIsActive(true);
@@ -119,6 +149,12 @@ function App() {
     });
   };
 
+  useEffect(() => {
+    const token = Cookies.get("bot_token");
+    setHasBotToken(!!token);
+  }, []);
+
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-white relative transition-colors duration-300">
       <ParticleBackground />
@@ -129,7 +165,7 @@ function App() {
         <div className="w-full max-w-4xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
-              SMS Bombing Service
+              SMS Testing Tool
             </h2>
             <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-lg leading-relaxed">
               Enter an Indian mobile number and hit the button to start SMS bombing.
@@ -139,6 +175,14 @@ function App() {
 
           <div className="flex flex-col items-center space-y-6">
             <PhoneInput onSubmit={handleSubmit} isActive={isActive} />
+            {!hasBotToken && (
+              <TurnstileWrapper
+                setHasBotToken={setHasBotToken}
+                setError={setError}
+                turnstileKey={turnstileKey}
+                error={error}
+              />
+            )}
 
             <StatusPanel
               isActive={isActive}
