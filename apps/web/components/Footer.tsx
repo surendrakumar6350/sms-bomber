@@ -24,15 +24,7 @@ const Footer: React.FC<FooterProps> = ({ setIsFeedbackModalOpen }) => {
 
 
           <div className="flex items-center space-x-4">
-            <a
-              href="https://github.com/surendrakumar6350/sms-bomber"
-              className="text-gray-600 dark:text-gray-400 hover:text-purple-400 transition-colors duration-300"
-              aria-label="GitHub"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Github className="h-5 w-5" />
-            </a>
+            
           </div>
           <div className="mt-8">
             <FeedbackTrigger onClick={() => setIsFeedbackModalOpen(true)} />
