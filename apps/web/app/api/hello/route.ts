@@ -5,6 +5,8 @@ import { z } from "zod";
 import { connectDb } from "@/dbConnection/connect";
 import { rateLimit } from "@/lib/rateLimiter";
 import axios, { AxiosError } from "axios";
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
 
 type Entry = {
     ip: string;
@@ -16,8 +18,9 @@ const WINDOW_SEC = 5; // 5 seconds
 
 export async function GET(request: Request): Promise<NextResponse> {
     try {
+
         // Check if worker configuration is set
-        if (!process.env.WORKER_URI || !process.env.WORKER_SECRET) {
+        if (!process.env.WORKER_URI || !process.env.WORKER_SECRET || !process.env.JWT_SECRET_KEY) {
             return NextResponse.json({
                 success: false,
                 message: "Worker configuration missing."
@@ -41,6 +44,26 @@ export async function GET(request: Request): Promise<NextResponse> {
         }
         const mobile = result.data;
 
+
+        // Check for bot_token in cookies
+        const cookieStore = await cookies();
+        const token = cookieStore.get("bot_token")?.value;
+
+        if (!token) {
+            return NextResponse.json(
+                { success: false, message: "Missing bot_token." },
+                { status: 401 }
+            );
+        }
+
+        try {
+            jwt.verify(token, process.env.JWT_SECRET_KEY!);
+        } catch (error) {
+            return NextResponse.json(
+                { success: false, message: "Invalid or expired bot_token.", error: error },
+                { status: 401 }
+            );
+        }
 
         // Extract IP address from request headers (Cloudflare-aware)
         const headersList = await headers();
@@ -94,7 +117,7 @@ export async function GET(request: Request): Promise<NextResponse> {
             if (recentEntries.length >= 100) {
                 return NextResponse.json({
                     success: false,
-                    message: "Too many requests from this mobile number.",
+                    message: "Try again in few hour for this mobile number.",
                 }, { status: 429 });
             }
 
