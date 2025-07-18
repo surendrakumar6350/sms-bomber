@@ -83,4 +83,4 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## Contact
 
-For any questions or suggestions, please contact us at [admin@surendra-dev.in.net].
+For any questions or suggestions, please contact us at [admin@smsbomber.live].
